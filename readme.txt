@@ -76,13 +76,13 @@ Thank you in advance.
 == Upgrade Notice ==
 
 = 0.1.0 =
-*Release Date - 18th Jun, 2015*
+*Release Date - 30th Jun, 2015*
 
 * Initial release
 
 == Changelog ==
 
 = 0.1.0 =
-*Release Date - 18th Jun, 2015*
+*Release Date - 30th Jun, 2015*
 
 * Initial release
