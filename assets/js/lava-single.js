@@ -28,6 +28,7 @@
 		this.lat				= lat;
 		this.lng				= lng;
 		this.latLng				= new google.maps.LatLng( lat, lng );
+		this.pano				= new google.maps.StreetViewService;
 		this.radius				= radius;
 		this.panel				= panel;
 		this.marker_icon		= marker_icon;
@@ -51,11 +52,13 @@
 
 			obj.instance		= true;
 
-			//this.setCoreMapContainer();
-			$( window ).on( 'load',  this.document_loaded() );
+			// this.setCoreMapContainer();
+			// $( window ).on( 'load',  this.document_loaded() );
+			$( document ).ready( obj.document_loaded() );
+
 		}
 
-		, setCoreMapContainer : function()
+		, setCoreMapContainer : function( allowPanorama )
 		{
 
 			var
@@ -95,7 +98,7 @@
 				}
 			}
 
-			if( obj.street.length && usePanorama && isLat && isLng ) {
+			if( obj.street.length && usePanorama && isLat && isLng && allowPanorama ) {
 				options.streetviewpanorama		= {
 					options						: {
 						container				: obj.street.get(0)
@@ -304,21 +307,17 @@
 		{
 			var
 				obj					= this
-				, pano				= new google.maps.StreetViewService
-				, params			= obj.param
+				, pano				= obj.pano
+				, param				= obj.param
 				, streetPosition	= new google.maps.LatLng(
-					parseFloat( params.find( "[data-street-lat]" ).val() || 0 )
-					, parseFloat( params.find( "[data-street-lng]" ).val() || 0 )
-				)
-
+					parseFloat( $( '[data-item-street-lat]', param ).val() || 0 )
+					, parseFloat( $( '[data-item-street-lng]', param ).val() || 0 )
+				);
 
 			// param1: Position, param2: Round, param3: callback
-			pano.getPanoramaByLocation(
-				streetPosition
-				, 50
-				, function( e ){
-					if( e != null )
-						$('[data-lava-single-streetview]').removeClass('hidden');
+			pano.getPanoramaByLocation( streetPosition, 1
+				, function( result, state ) {
+					obj.setCoreMapContainer( state === google.maps.StreetViewStatus.OK )
 				}
 			);
 			return this;
@@ -356,9 +355,7 @@
 			{
 				if( obj.el.length )
 					if( obj.lat && obj.lng ) {
-						obj
-							.setCoreMapContainer()
-							.availableStreeview();
+						obj.availableStreeview();
 					}else{
 						obj.el.html( mapNotLoaded );
 					}

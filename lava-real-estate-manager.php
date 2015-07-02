@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name: Lava Real Estate Manager
- * Plugin URL : http://lava-code.com/real-estate/
+ * Plugin URI : http://lava-code.com/real-estate/
  * Description: Lava Real Estate Manager Plugin
- * Version: 0.1.0
+ * Version: 0.1.1
  * Author: lavacode
- * Author URL: http://lava-code.com/
+ * Author URI: http://lava-code.com/
  * Text Domain: Lavacode
  * Domain Path: /languages/
  */

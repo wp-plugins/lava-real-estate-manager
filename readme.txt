@@ -2,7 +2,7 @@
 Contributors: lavacode
 Requires at least: 3.2
 Tested up to: 4.2.2
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 Tags: real estate, property, Vertical Market, MLS, Property listing, RETS, Listings, Agency, Broker, Realtor, Property, IDX, Property Management, Properties
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -66,21 +66,37 @@ Our codex can be found at <a href="http://lava-code.com/real-estate/documentatio
 
 Report bugs, suggest ideas, and participate in development at wp.lava.code@gmail.com .
 
+== Screenshots ==
+1. ** Setting page ** - Lava real estate manager plugin setting page.
+2. ** Back-end form ** - You can manager (add/edit/delete) property information.
+3. ** Front-end form ** - Your user can add properties on front-end
+
+
 == Languages ==
 
-It is currently (v0.1.0) available only English version. we are happy to have volunteer to assist to translate in your own languages.
+It is currently (v0.1) available only English version. we are happy to have volunteer to assist to translate in your own languages.
 Please email us at wp.lava.code@gmail.com , if you are interested.
 Thank you in advance.
 
 
 == Upgrade Notice ==
 
+= 0.1.1 =
+*Release Date - 02. July, 2015*
+
 = 0.1.0 =
 *Release Date - 30th Jun, 2015*
 
-* Initial release
-
 == Changelog ==
+
+= 0.1.1 =
+*Release Date - 02. July, 2015*
+
+* Added : Removed Map page setting (Settings > Page Settings > Map Page) and added a Map Page Template (Map Template). It's better to create unlimited map pages.
+* Improved : Single Property > StreetView > Added a notice if the location is not supported by google map API.
+* Fixed : Single Property > Load detail images and description (custom template page) on your own theme
+* Added : Plugin icon, banner and screen shots on wordpress site.
+
 
 = 0.1.0 =
 *Release Date - 30th Jun, 2015*

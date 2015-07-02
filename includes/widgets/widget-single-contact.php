@@ -21,7 +21,6 @@ class Lava_Contact_Single_Page extends WP_Widget
 			, $lava_realestate_manager;
 
 		self::$load_script	= true;
-		lava_realestate_setupdata( $post );
 
 		if( empty( $post ) ) {
 			echo '<h4>' . __( "Invalid post ID.", 'Lavacode') . '</h4>';
@@ -31,14 +30,13 @@ class Lava_Contact_Single_Page extends WP_Widget
 		if( $post->post_type != $this->post_type )
 			return;
 
-		$output_filename		= "lava-single-contact-content.php";
+		$output_filename		= basename( __FILE__ );
 
 		if(
 			! $template_file = locate_template(
 				Array(
 					$output_filename
 					, "{$lava_realestate_manager->folder}/{$output_filename}"
-					, "{$lava_realestate_manager->folder}/html/{$output_filename}"
 				)
 			)
 		){

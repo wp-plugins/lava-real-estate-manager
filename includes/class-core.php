@@ -322,9 +322,6 @@ class Lava_RealEstate_Manager_Func
 		if( in_the_loop() && is_singular( self::SLUG ) ) {
 
 			remove_filter( 'the_content', Array( $this, 'singleTemplate' ) );
-
-			self::setupdata( $post );
-
 			ob_start();
 			require_once "{$lava_realestate_manager->template_path}/content.php";
 			$content = ob_get_clean();

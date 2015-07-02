@@ -16,11 +16,22 @@ class Lava_RealEstate_Manager_template
 	{
 		$this->post_type											= constant( 'Lava_RealEstate_Manager_Func::SLUG' );
 
-		/* Common hooks */ {
+		/** Common hooks */ {
 			add_filter( 'template_include'							, Array( $this, 'load_templates' ) );
 		}
 
+		/** Register Map Template */ {
+			add_filter( 'page_attributes_dropdown_pages_args'		, Array( $this, 'register_map_tempate' ) );
+			add_filter( 'wp_insert_post_data'						, Array( $this, 'register_map_tempate' ) );
+
+		}
+
 		/** Single page template */ {
+
+			add_action(
+				"lava_{$this->post_type}_single_container_before"
+				, Array( $this, 'parse_post_object' )
+			);
 
 			add_action(
 				"lava_{$this->post_type}_single_container_after"
@@ -56,6 +67,31 @@ class Lava_RealEstate_Manager_template
 			// Output Variables
 			add_action( "lava_{$this->post_type}_listings_after"	, Array( $this, 'print_listings_var' ) );
 		}
+	}
+
+
+
+
+	/**
+	 *
+	 *
+	 *
+	 *	@param	array
+	 *	@return	array
+	 */
+	public function register_map_tempate( $attr ) {
+		$cache_key	= 'page_templates-' . md5( get_theme_root() . '/' . get_stylesheet() );
+		$templates	= wp_get_theme()->get_page_templates();
+		$templates	= empty( $templates ) ? Array() : $templates;
+		$templates	= wp_parse_args(
+			$templates
+			, Array(
+				"lava_{$this->post_type}_map"	=> __( "Lava Map Template", 'Lavacode' )
+			)
+		);
+		wp_cache_delete( $cache_key , 'themes');
+		wp_cache_add( $cache_key, $templates, 'themes', 1800 );
+		return $attr;
 	}
 
 
@@ -121,9 +157,10 @@ class Lava_RealEstate_Manager_template
 
 			/* Map Template */ {
 
-				if( $wp_query->is_page && $post->ID == lava_realestate_manager_get_option( 'map_page', 0 ) ) {
+				if( "lava_{$this->post_type}_map" == get_post_meta( $post->ID, '_wp_page_template', true ) ){
 
 					add_action( 'wp_enqueue_scripts'		, Array( $this, 'map_template_enqueues' ) );
+					add_action( 'get_header'				, Array( $this, 'remove_html_margin_top' ) );
 
 					lava_realestate_mapdata( $post );
 					$GLOBALS[ 'post' ] = $post;
@@ -192,6 +229,19 @@ class Lava_RealEstate_Manager_template
 
 		$filepath				= trailingslashit( $lava_realestate_manager->template_path ) . "form/lava-add-item-user.php";
 		if( file_exists( $filepath ) ) require_once $filepath;
+	}
+
+
+
+
+	/**
+	 *
+	 *
+	 *	@return	void
+	 */
+	public function parse_post_object()
+	{
+		lava_realestate_setupdata();
 	}
 
 
@@ -286,24 +336,44 @@ class Lava_RealEstate_Manager_template
 	/**
 	 *
 	 *
+	 *	@param	array
+	 *	@return	void
+	 */
+	public function remove_html_margin_top()
+	{
+		remove_action('wp_head', '_admin_bar_bump_cb');
+	}
+
+
+
+
+	/**
+	 *
+	 *
 	 *	@return	void
 	 */
 	public function print_map_templates()
 	{
 		global $lava_realestate_manager;
 
+		$tmpDir				= $lava_realestate_manager->template_path . '/';
+
 		$load_map_htmls		= Array(
-			'lava-map-output-template'	=> 'template-map-htmls.php'
-			, 'lava-map-not-found-template'	=> 'template-not-list.php'
+			'lava-map-output-template'		=> $tmpDir . 'template-map-htmls.php'
+			, 'lava-map-not-found-template'	=> $tmpDir . 'template-not-list.php'
 		);
 
-		$load_map_htmls		= apply_filters( 'lava_{$this->post_type}_map_htmls', $load_map_htmls );
+		$load_map_htmls		= apply_filters( "lava_{$this->post_type}_map_htmls", $load_map_htmls, $tmpDir );
+
 		$output_script		= Array();
-		if( !empty( $load_map_htmls ) ) : foreach( $load_map_htmls as $sID => $strFilename ) {
+		if( !empty( $load_map_htmls ) ) : foreach( $load_map_htmls as $sID => $strFilePath ) {
 
 			$output_script[]	= "<script type='text/html' id=\"{$sID}\">";
 			ob_start();
-			require_once $lava_realestate_manager->template_path . "/{$strFilename}";
+
+			if( file_exists( $strFilePath ) )
+				require_once $strFilePath;
+
 			$output_script[]	= ob_get_clean();
 			$output_script[]	= "</script>";
 

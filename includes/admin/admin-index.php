@@ -44,19 +44,6 @@
 								</fieldset>
 							</td>
 						</tr>
-						<tr><td colspan="3" style="padding:0;"><hr style='margin:0;'></td></tr>
-						<tr valign="top">
-							<td width="1%"></td>
-							<th><?php _e( "Maps Page", 'Lavacode' ); ?></th>
-							<td>
-								<fieldset>
-									<select name="lava_realestate_manager_settings[map_page]">
-										<option value><?php _e( "Select Page", 'Lavacode' ); ?></option>
-										<?php echo getOptionsPagesLists( lava_realestate_manager_get_option( 'map_page' ) ); ?>
-									</select>
-								</fieldset>
-							</td>
-						</tr>
 					</tbody>
 				</table>
 			</td>
