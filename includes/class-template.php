@@ -159,11 +159,9 @@ class Lava_RealEstate_Manager_template
 
 				if( "lava_{$this->post_type}_map" == get_post_meta( $post->ID, '_wp_page_template', true ) ){
 
-					add_action( 'wp_enqueue_scripts'		, Array( $this, 'map_template_enqueues' ) );
-					add_action( 'get_header'				, Array( $this, 'remove_html_margin_top' ) );
-
-					lava_realestate_mapdata( $post );
-					$GLOBALS[ 'post' ] = $post;
+					add_action( 'wp_enqueue_scripts'	, Array( $this, 'map_template_enqueues' ) );
+					add_action( 'get_header'					, Array( $this, 'remove_html_margin_top' ) );
+					add_action( 'wp_head'						, Array( $this, 'parse_mapdata' ) );
 
 					$template			= $lava_realestate_manager->template_path . "/template-map.php";
 					if(  $__template = locate_template(
@@ -178,6 +176,22 @@ class Lava_RealEstate_Manager_template
 			}
 		}
 		return $template;
+	}
+
+
+
+
+
+	/**
+	 *
+	 *
+	 *	@param	object
+	 *	@return	void
+	 */
+	public function parse_mapdata()
+	{
+		lava_realestate_mapdata( $post );
+		$GLOBALS[ 'post' ] = $post;
 	}
 
 

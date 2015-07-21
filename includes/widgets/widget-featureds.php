@@ -6,8 +6,8 @@ class Lava_Realestate_Featured extends WP_Widget
 	{
 		parent::__construct(
 			'Lava_Realestate_Featured'
-			, __( "[Lava] Realestate Featured Widget", 'Lavacode' )
-			, array( 'description' => __( ".", 'Lavacode' ) )
+			, __( "[Lava] Featured Properties Widget", 'Lavacode' )
+			, array( 'description' => __( "This widget shows a list of featured properties as box style.", 'Lavacode' ) )
 		);
 
 		add_action( 'wp_footer'								, Array(__CLASS__, 'scripts' ) );

@@ -6,8 +6,8 @@ class Lava_Contact_Single_Page extends WP_Widget
 	{
 		parent::__construct(
 			'Lava_Contact_Single_Page'
-			, __( "[Lava] Realestate Single Contact", 'Lavacode' )
-			, array( 'description' => __( "Single property contact widget", 'Lavacode' ) )
+			, __( "[Lava] Author information", 'Lavacode' )
+			, array( 'description' => __( "This is for only single detail pages. This widget shows the requested information about the author of the property.", 'Lavacode' ) )
 		);
 
 		$this->post_type									= constant( 'Lava_RealEstate_Manager_Func::SLUG' );
@@ -30,6 +30,25 @@ class Lava_Contact_Single_Page extends WP_Widget
 		if( $post->post_type != $this->post_type )
 			return;
 
+		$lava_contact_shortcode	= $lava_report_shortcode	= '';
+		if( isset( $instance['contact_type'] ) && isset( $instance['contact_id'] ) )
+		{
+			switch( $instance[ 'contact_type' ] ) {
+				case 'contact'	: $lava_contact_shortcode = '[contact-form-7 id=%s title="%s"]'; break;
+				case 'ninja'	: $lava_contact_shortcode = '[ninja_forms id=%s title="%s"]'; break;
+			}
+		}
+
+		if( isset( $instance['report_type'] ) && isset( $instance['report_id'] ) )
+		{
+			switch( $instance[ 'report_type' ] ) {
+				case 'contact'	: $lava_report_shortcode = '[contact-form-7 id=%s title="%s"]'; break;
+				case 'ninja'	: $lava_report_shortcode = '[ninja_forms id=%s title="%s"]'; break;
+			}
+		}
+		$GLOBALS[ 'lava_contact_shortcode' ] = sprintf( $lava_contact_shortcode, $instance['contact_id'], __( 'Javo Contact Form', 'javo_fr' ) );
+		$GLOBALS[ 'lava_report_shortcode' ] = sprintf( $lava_report_shortcode, $instance['report_id'], __( 'Javo Contact Form', 'javo_fr' ) );
+
 		$output_filename		= basename( __FILE__ );
 
 		if(
@@ -43,9 +62,9 @@ class Lava_Contact_Single_Page extends WP_Widget
 			$template_file = dirname( __FILE__ ) . "/html/{$output_filename}";
 		}
 		ob_start();
-			echo $args[ 'before_widget' ];
+			echo isset( $args[ 'before_widget' ] ) ? $args[ 'before_widget' ] : '';
 			require_once $template_file;
-			echo $args[ 'after_widget' ];
+			echo isset( $args[ 'after_widget' ] ) ?$args[ 'after_widget' ]  : '';
 		ob_end_flush();
 	}
 

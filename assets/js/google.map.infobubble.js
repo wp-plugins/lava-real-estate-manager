@@ -218,7 +218,7 @@ InfoBubble.prototype.buildDom_ = function() {
   close.style['cursor'] = 'pointer';
   close.style['right']	= '0';
   close.style['margin'] = '7px 16px 0';
-  close.innerHTML = '<div class="btn btn-default btn-circle btn-xxs javo_map_preview_close_icon"><i class="fa fa-times"></i></div>';
+  close.innerHTML = '<div class="btn btn-default btn-circle btn-xxs lava_map_preview_close_icon"><i class="fa fa-times"></i></div>';
 
   var that = this;
   google.maps.event.addDomListener(close, 'click', function() {

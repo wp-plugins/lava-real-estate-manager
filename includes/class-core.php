@@ -1,10 +1,16 @@
 <?php
 class Lava_RealEstate_Manager_Func
 {
-	const SLUG = 'property';
+
+	public	$slug;
+	const	SLUG								= 'property';
+	private static $is_wpml_actived		= false;
 
 	public function __construct()
 	{
+		$this->slug	= self::SLUG;
+
+		add_action( 'plugins_loaded'		, Array( __CLASS__, 'parse_request' ) );
 		add_action( 'lava_realestate_manager_init'		, Array( $this, 'init_post_type' ) );
 		add_action( 'lava_realestate_post_registered'	, Array( $this, 'init_taxonomies' ) );
 		//add_filter( 'single_template'					, Array( $this, 'single_template' ) );
@@ -19,10 +25,24 @@ class Lava_RealEstate_Manager_Func
 		if( ! has_filter( 'lava_get_selbox_child_term_lists' ) )
 			add_filter('lava_get_selbox_child_term_lists'	, Array( $this, 'selbox_child_term_lists_callback' ), 10, 7);
 
-		// $this->update_json();
+		// Auto Items Update
+		add_action( 'save_post'				, Array( __CLASS__, 'lava_auto_generator_trigger_callback' ), 10, 3 );
+		add_action( 'lava_' . self::SLUG . '_json_update' ,  Array( __CLASS__, 'lava_auto_generator_trigger_callback' ), 10, 3);
+		add_action( 'transition_post_status'	,  Array( __CLASS__, 'lava_auto_generator_transition_trigger_callback' ), 10, 3 );
+		add_action( 'wp_trash_post'				,  Array( __CLASS__, 'lava_auto_generator_delete_trigger_callback' ) );
+		add_action( 'before_delete_post'		,  Array( __CLASS__, 'lava_auto_generator_delete_trigger_callback' ) );
+
+		// WPML
+		add_action( 'icl_make_duplicate'		, Array( __CLASS__, 'lava_auto_generator_wpml_trigger_callback' ), 10, 4 );
+
+
 
 		require_once 'functions-core.php';
 		require_once 'functions-ajaxMap.php';
+	}
+
+	public static function parse_request() {
+		self::$is_wpml_actived				= function_exists( 'icl_object_id' );
 	}
 
 	public function is_dashboard( $body_class ) {
@@ -106,13 +126,13 @@ class Lava_RealEstate_Manager_Func
 	{
 		return Array(
 			'_bedrooms'			=> Array(
-				'label'			=> __( "BedRooms", 'Lavacode' )
+				'label'			=> __( "Bedrooms", 'Lavacode' )
 				, 'element'		=> 'input'
 				, 'type'		=> 'number'
 				, 'class'		=> 'all-options'
 			)
 			, '_bathrooms'		=> Array(
-				'label'			=> __( "BathRooms", 'Lavacode' )
+				'label'			=> __( "Bathrooms", 'Lavacode' )
 				, 'element'		=> 'input'
 				, 'type'		=> 'number'
 				, 'class'		=> 'all-options'
@@ -225,7 +245,6 @@ class Lava_RealEstate_Manager_Func
 				, 'show_in_menu'		=> true
 				, 'query_var'			=> true
 				, 'map_meta_cap'		=> true
-				, 'capability_type'		=> self::SLUG
 				, 'has_archive'			=> true
 				, 'hierarchical'		=> false
 				, 'menu_position'		=> null
@@ -253,8 +272,8 @@ class Lava_RealEstate_Manager_Func
 									, 'all_items'          => __( 'All Properties', 'Lavacode' )
 									, 'search_items'       => __( 'Search Properties', 'Lavacode' )
 									, 'parent_item_colon'  => __( 'Parent Properties:', 'Lavacode' )
-									, 'not_found'          => __( 'No Properties found.', 'Lavacode' )
-									, 'not_found_in_trash' => __( 'No Properties found in Trash.', 'Lavacode' )
+									, 'not_found'          => __( 'Not found Properties.', 'Lavacode' )
+									, 'not_found_in_trash' => __( 'Not found properties in trash.', 'Lavacode' )
 								)
 								, 'rewrite'	=> Array( 'slug' => self::SLUG )
 							)
@@ -307,7 +326,7 @@ class Lava_RealEstate_Manager_Func
 	public function parse_single_page() {
 		global $post;
 
-		if( $post->post_type === self::SLUG ) {
+		if( !empty( $post->post_type ) && $post->post_type === self::SLUG ) {
 			add_action( 'wp_enqueue_scripts' , Array( $this, 'single_enqueue' ), 11 );
 
 			/* Wordpress Emoji & Google StreetView Clash */
@@ -449,39 +468,48 @@ class Lava_RealEstate_Manager_Func
 			"lava_all_{$post_type}_{$blog_id}_{$lang}.json";
 	}
 
-	public function update_json() {
-
-		add_action( 'wp_insert_post'		, Array( __CLASS__, 'lava_auto_generator_trigger_callback' ), 10, 3 );
+	public static function lava_auto_generator_trigger_callback( $post_id, $post, $update ) {
+		remove_action( 'save_post'				, Array( __CLASS__, 'lava_auto_generator_trigger_callback' ), 10, 3 );
+		self::lava_auto_generator_callback( $post_id, 'publish' !== get_post_status( $post_id ) );
+		add_action( 'save_post'				, Array( __CLASS__, 'lava_auto_generator_trigger_callback' ), 10, 3 );
 	}
 
-	public static function lava_auto_generator_trigger_callback( $post_id, $post, $update ) {
-		remove_action( 'wp_insert_post'		, Array( __CLASS__, 'lava_auto_generator_trigger_callback' ) );
-		if( function_exists( 'icl_makes_duplicates' ) && get_post_type( $post_id ) == self::SLUG && false )
-			icl_makes_duplicates( $post_id );
+	public static function lava_auto_generator_wpml_trigger_callback( $master, $lang=false,  $post_args=Array(), $post_id=0 ) {
 		self::lava_auto_generator_callback( $post_id, 'publish' !== get_post_status( $post_id ) );
-		add_action( 'wp_insert_post'		, Array( __CLASS__, 'lava_auto_generator_trigger_callback' ), 10, 3 );
+	}
+
+	public static function lava_auto_generator_delete_trigger_callback( $post_id  ) {
+		self::lava_auto_generator_callback( $post_id, true );
+	}
+
+	public static function lava_auto_generator_transition_trigger_callback( $state, $old, $post ) {
+		if( is_object( $post ) && !empty( $post ) )
+			self::lava_auto_generator_callback( $post->ID, 'publish' !== $state );
 	}
 
 	public static function lava_auto_generator_callback( $post_id, $is_remove = false )
 	{
 		global $wpdb;
 
-		$is_execusion = $get_lang_by_post	= false;
+		$is_execusion		= $get_lang_by_post = $lava_is_update = false;
 
-		if( get_post_type( $post_id ) === self::SLUG && ( 'publish' === get_post_status( $post_id ) || $is_remove ) )
-			$is_execusion		= true;
+		if(
+			get_post_type( $post_id ) === self::SLUG &&
+			get_post_status( $post_id )  === 'publish' ||
+			$is_remove
+		) $is_execusion	= true;
 
-		if( ! $is_execusion )
+		if( !$is_execusion )
 			return $post_id;
 
-		if( defined( 'ICL_SITEPRESS_VERSION' ) )
-			$get_lang_by_post	= $wpdb->get_var(
+		if( self::$is_wpml_actived && defined( 'ICL_LANGUAGE_CODE' ) )
+			if( ! $get_lang_by_post	= $wpdb->get_var(
 				$wpdb->prepare( "select language_code from {$wpdb->prefix}icl_translations where element_id=%d", $post_id )
-			);
+			) ) return;
 
-		$upload_folder		= wp_upload_dir();
-		$blog_id			= get_current_blog_id();
-		$json_file			= "{$upload_folder['basedir']}/lava_all_" . self::SLUG . "_{$blog_id}_{$get_lang_by_post}.json";
+		$upload_folder			= wp_upload_dir();
+		$blog_id					= get_current_blog_id();
+		$json_file					= "{$upload_folder['basedir']}/lava_all_" . self::SLUG . "_{$blog_id}_{$get_lang_by_post}.json";
 
 		if( file_exists( $json_file ) ) {
 			$json_contents	= file_get_contents( $json_file );
@@ -491,17 +519,17 @@ class Lava_RealEstate_Manager_Func
 		}
 
 		// Google Map LatLng Values
-		$latlng = Array(
-			'lat'			=> get_post_meta( $post_id, 'lv_item_lat', true )
-			, 'lng'			=> get_post_meta( $post_id, 'lv_item_lng', true )
+		$latlng						= Array(
+			'lat'						=> get_post_meta( $post_id, 'lv_item_lat', true )
+			, 'lng'						=> get_post_meta( $post_id, 'lv_item_lng', true )
 		);
 
-		$category			= Array();
+		$category					= Array();
 		$category_label		= Array();
 
 		/* Taxonomies */ {
 
-			$lava_all_taxonomies				= Array_keys( self::lava_extend_item_taxonomies() );
+			$lava_all_taxonomies				= apply_filters( 'lava_' . self::SLUG . '_categories', Array( 'post_tag' ) );
 
 			foreach( $lava_all_taxonomies as $taxonomy )
 			{
@@ -532,9 +560,8 @@ class Lava_RealEstate_Manager_Func
 				//$category[ $taxonomy ] = $results;
 				foreach( $results as $result )
 				{
-					$category[ $taxonomy ][]		= $result->term_id;
+					$category[ $taxonomy ][]			= $result->term_id;
 					$category_label[ $taxonomy ][]	= $result->name;
-
 				}
 			}
 		}
@@ -547,26 +574,24 @@ class Lava_RealEstate_Manager_Func
 			}
 		}
 
-		$lava_categories		= new lava_ARRAY( $category );
+		$lava_categories			= new lava_ARRAY( $category );
 		$lava_categories_label	= new lava_ARRAY( $category_label );
 
-		$lava_result_args = Array(
-			'post_id'		=> $post_id
-			, 'post_title'	=> get_the_title( $post_id )
-			, 'lat'			=> $latlng['lat']
-			, 'lng'			=> $latlng['lng']
-			, 'rating'		=> get_post_meta( $post_id, 'rating_average', true )
-			, 'icon'		=> $lava_set_icon
-			, 'tags'		=> $lava_categories_label->get( 'post_tag' )
+		$lava_result_args			= Array(
+			'post_id'					=> $post_id
+			, 'post_title'				=> get_the_title( $post_id )
+			, 'lat'							=> $latlng['lat']
+			, 'lng'							=> $latlng['lng']
+			, 'rating'					=> get_post_meta( $post_id, 'rating_average', true )
+			, 'icon'						=> ''
+			, 'tags'						=> $lava_categories_label->get( 'post_tag' )
 		);
 
 		if( !empty( $lava_all_taxonomies ) ) : foreach( $lava_all_taxonomies as $taxonomy ) {
 			$lava_result_args[ $taxonomy ]	= $lava_categories->get( $taxonomy );
 		} endif;
 
-		$lava_result		= apply_filters( 'lava_json_addition', $lava_result_args, $post_id, $lava_categories );
-
-		$lava_is_update = false;
+		$lava_result		= apply_filters( 'lava_' . self::SLUG . '_json_addition', $lava_result_args, $post_id , $lava_categories );
 
 		if( !empty( $lava_all_posts ) )
 		{
@@ -590,10 +615,17 @@ class Lava_RealEstate_Manager_Func
 				}
 			}
 		}
-		if( ! $lava_is_update && ! $is_remove  )
-		{
+		if( ! $lava_is_update && ! $is_remove  ) {
 			$lava_all_posts[] = $lava_result;
 		}
+
+		usort(
+			$lava_all_posts
+			, create_function(
+				'$a,$b'
+				,'return strlen($b["post_id"]) - strlen($a["post_id"]);'
+			)
+		);
 
 		// Make JSON file
 		$file_handler	= @fopen( $json_file, 'w' );

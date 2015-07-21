@@ -10,13 +10,13 @@ if( ! $lava_realestate_stc_mmypage->get( 'hide_pending', false ) || current_user
 	$lava_realestate_status[]		= 'pending';
 
 
-$lava_user_posts = new WP_Query(
+$lava_user_posts						= new WP_Query(
 	Array(
-		'post_type'			=> $this->post_type
-		, 'author'			=> get_current_user_id()
-		, 'post_status'		=> $lava_realestate_status
-		, 'posts_per_page'	=> 10
-		, 'paged'			=> max( 1, get_query_var( 'paged') )
+		'post_type'						=> $this->post_type
+		, 'author'							=> get_current_user_id()
+		, 'post_status'					=> $lava_realestate_status
+		, 'posts_per_page'			=> 10
+		, 'paged'							=> max( 1, get_query_var( 'paged' ) )
 	)
 ); ?>
 
@@ -57,12 +57,28 @@ $lava_user_posts = new WP_Query(
 							</div>
 							<?php if( get_current_user_id() == get_the_author_meta( 'ID' ) ) : ?>
 								<div class="lava-action">
+
+									<?php
+									do_action(
+										"lava_{$this->post_type}_dashboard_actions_before"
+										, get_the_ID()
+										, lava_realestate_manager_get_option( 'page_add_' . $this->post_type )
+									) ; ?>
+
 									<a href="<?php lava_realestate_edit_page(); ?>">
 										<?php _e( "Edit", 'Lavacode' ); ?>
 									</a>
 									<a href="javascript:" data-lava-realstate-manager-trash="<?php the_ID();?>">
 										<?php _e( "Remove", 'Lavacode' ); ?>
 									</a>
+
+									<?php
+									do_action(
+										"lava_{$this->post_type}_dashboard_actions_after"
+										, get_the_ID()
+										, lava_realestate_manager_get_option( 'page_add_' . $this->post_type )
+									) ; ?>
+
 								</div>
 							<?php endif; ?>
 						</th>
@@ -78,13 +94,13 @@ $lava_user_posts = new WP_Query(
 	</table>
 	<p class="lava-pagination">
 		<?php
-		$big = 999999999;
+		$big						= 999999999;
 		echo paginate_links(
 			Array(
-				'base'		=> str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) )
-				, 'format'	=> '?paged=%#%'
-				, 'current'	=> max( 1, get_query_var('paged') )
-				, 'total'	=> $lava_user_posts->max_num_pages
+				'base'			=> str_replace( $big, '%#%', esc_url( get_pagenum_link( $big ) ) )
+				, 'format'		=> '?paged=%#%'
+				, 'current'		=> max( 1, get_query_var('paged') )
+				, 'total'			=> $lava_user_posts->max_num_pages
 			)
 		); ?>
 	</p>
@@ -98,7 +114,7 @@ $lava_user_posts = new WP_Query(
 <?php
 $lava_output_variable	= Array();
 $lava_output_variable[]	= "<script type=\"text/javascript\">";
-$lava_output_variable[]	= sprintf( "var strLavaTrashConfirm = '%s'", __( "Do you want to delete the this item?", 'Lavacode') );
+$lava_output_variable[]	= sprintf( "var strLavaTrashConfirm = '%s'", __( "Do you want to delete this item?", 'Lavacode') );
 $lava_output_variable[]	= "</script>";
 
 echo @implode( "\n", $lava_output_variable );

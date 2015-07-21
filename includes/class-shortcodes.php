@@ -99,12 +99,12 @@ class Lava_RealEstate_Manager_Shortcodes
 
 		ob_start();
 
-		if( wp_verify_nonce( $lava_query->get( "lava_realestate_manager_submit_{$this->post_type}", '' ), 'security' ) ) {
-			do_action( 'lava_add_item_preview_content_before' );
-			do_action( 'lava_add_item_preview_content_after' );
-		} else{
-			require_once trailingslashit( $lava_realestate_manager->template_path ) . 'template-addItem.php';
-		}
+		$strFormFile						= apply_filters(
+			"lava_{$this->post_type}_form_loadFile"
+			, trailingslashit( $lava_realestate_manager->template_path ) . 'template-addItem.php'
+		);
+		if( file_exists( $strFormFile ) )
+			require_once $strFormFile;
 
 		return ob_get_clean();
 	}
@@ -155,11 +155,11 @@ class Lava_RealEstate_Manager_Shortcodes
 		$post	= get_post( $tID );
 
 		if( ! is_object( $post ) ){
-			return sprintf( "<div class='notice'>%s</div>", __( "Invaild Post ID", 'Lavacode' ) );
+			return sprintf( "<div class='notice'>%s</div>", __( "Invaild Post ID.", 'Lavacode' ) );
 		}
 
 		if( $post->post_author != get_current_user_id() && ! current_user_can( 'manage_options' ) ) {
-			return sprintf( "<div class='notice'>%s</div>", __( "Your not the author", 'Lavacode' ) );
+			return sprintf( "<div class='notice'>%s</div>", __( "You are not the author.", 'Lavacode' ) );
 		}
 		return self::ACCEPT;
 	}

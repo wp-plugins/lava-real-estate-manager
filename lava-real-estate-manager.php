@@ -3,7 +3,7 @@
  * Plugin Name: Lava Real Estate Manager
  * Plugin URI : http://lava-code.com/real-estate/
  * Description: Lava Real Estate Manager Plugin
- * Version: 0.1.1
+ * Version: 0.1.2
  * Author: lavacode
  * Author URI: http://lava-code.com/
  * Text Domain: Lavacode
@@ -34,7 +34,7 @@ if( ! class_exists( 'Lava_RealEstate_Manager' ) ) :
 
 	class Lava_RealEstate_Manager
 	{
-		private $version = '0.1.0';
+		private $version = '0.1.2';
 		private static $instance;
 
 		public function __construct( $file )
@@ -47,10 +47,36 @@ if( ! class_exists( 'Lava_RealEstate_Manager' ) ) :
 			$this->image_url		= esc_url( trailingslashit( $this->assets_url . 'images/' ) );
 
 			$this->load_files();
-
 			$this->register_hooks();
 
+			register_activation_hook( $file, Array( $this, 'welcome' ) );
 			new Lava_RealEstate_Manager_Enqueues;
+		}
+
+		public function welcome() {
+			set_transient( $this->folder . '_welcome', true, 30 );
+		}
+
+		public function redirect_welcome(){
+
+			global $lava_realestate_manager_func;
+
+
+			if( ! get_transient( $this->folder . '_welcome' ) )
+				return;
+
+			delete_transient( $this->folder . '_welcome' );
+
+			if( is_network_admin() )
+				return;
+
+			/*
+			wp_safe_redirect(
+				admin_url(
+					"edit.php?post_type={$lava_realestate_manager_func->slug}&page=lava-{$lava_realestate_manager_func->slug}-welcome"
+				)
+			);
+			*/
 		}
 
 		public function load_files()
@@ -63,6 +89,7 @@ if( ! class_exists( 'Lava_RealEstate_Manager' ) ) :
 			require_once 'includes/class-shortcodes.php';
 			require_once 'includes/class-template.php';
 			require_once 'includes/class-submit.php';
+			// require_once 'includes/updater.php';
 
 			$GLOBALS[ 'lava_realestate_manager_func' ]		= new Lava_RealEstate_Manager_Func;
 		}
@@ -70,8 +97,10 @@ if( ! class_exists( 'Lava_RealEstate_Manager' ) ) :
 		{
 			add_action( 'init'						, Array( $this, 'initialize' ) );
 			add_action( 'init'						, Array( $this, 'register_admin_panel' ) );
+			add_action( 'admin_init'				, Array( $this, 'redirect_welcome' ) );
 			add_action( 'widgets_init'				, Array( $this, 'register_sidebar' ) );
 			add_action( 'widgets_init'				, Array( $this, 'register_widgets' ) );
+			load_plugin_textdomain('Lavacode', false, $this->folder . '/languages/');
 		}
 
 		public function initialize()

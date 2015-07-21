@@ -95,6 +95,7 @@ class Lava_RealEstate_Manager_Submit
 
 		$is_update			= false;
 		$is_publish			= lava_realestate_manager_get_option( "new_{$this->post_type}_status" ) !== 'pending';
+		$is_publish			= (boolean) apply_filters( "lava_{$this->post_type}_new_status", $is_publish );
 
 		$lava_dashboardID	= $lava_realestate_manager_admin->get_settings( 'page_my_page' );
 
@@ -190,6 +191,8 @@ class Lava_RealEstate_Manager_Submit
 
 				update_post_meta( $post_id, '_location', $arrLocation );
 
+				do_action( "lava_{$this->post_type}_json_update", $post_id, get_post( $post_id ), $is_update );
+
 				$response[ 'state' ]	= 'OK';
 
 				if( get_post_status( $post_id ) === 'publish' ) {
@@ -197,10 +200,10 @@ class Lava_RealEstate_Manager_Submit
 				}else{
 					$strRedirect	=  intVal( $lava_dashboardID ) > 0 ? get_permalink( $lava_dashboardID ) : home_url();
 				}
-				$response[ 'link']	= $strRedirect;
+				$response[ 'link']	= apply_filters( "lava_{$this->post_type}_new_item_redirect", $strRedirect, $post_id );
 
 			}else{
-				throw new Exception( __( "New property has been failed.", 'Lavacode' ) );
+				throw new Exception( __( "Please try again, failure to submit", 'Lavacode' ) );
 			}
 		} catch( Exception $e ) {
 			die( json_encode( Array( 'err' => $e->getMessage() ) ) );
@@ -222,9 +225,9 @@ class Lava_RealEstate_Manager_Submit
 			current_user_can( 'manage_option' )
 		){
 			wp_delete_post( $post->ID, true );
-			$lava_dashboard_message = __( "Item deleted", 'Lavacode' );
+			$lava_dashboard_message = __( "It has been deleted", 'Lavacode' );
 		}else{
-			$lava_dashboard_message = __( "Your not the author", 'Lavacode' );
+			$lava_dashboard_message = __( "You are not the author.", 'Lavacode' );
 		}
 	}
 

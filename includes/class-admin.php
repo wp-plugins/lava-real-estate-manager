@@ -5,30 +5,34 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 	const __OPTION_GROUP__					= 'lava_realestate_manager_group';
 
 	private $admin_dir;
+	private static $form_loaded					= false;
+	private static $is_wpml_actived;
 	private static $item_refresh_message;
-	private static $form_loaded				= false;
+
 
 	public function __construct()
 	{
-		$this->admin_dir					= trailingslashit( dirname( __FILE__ ) . '/admin' );
-		$this->post_type					= self::SLUG;
+		$this->admin_dir									= trailingslashit( dirname( __FILE__ ) . '/admin' );
+		$this->post_type									= self::SLUG;
+
+		self::$is_wpml_actived							= function_exists( 'icl_object_id' );
 
 		// Admin Initialize
-		add_action( 'admin_init'								, Array( $this, 'register_options' ) );
-		add_action( 'admin_menu'								, Array( $this, 'register_setting_page' ) );
-		add_action( 'admin_footer'								, Array( $this, 'admin_form_scripts' ) );
-		add_action( 'save_post'									, Array( $this, 'save_post' ) );
-		add_action( 'add_meta_boxes'							, Array( $this, 'reigster_meta_box' ), 0 );
-		add_action( 'admin_enqueue_scripts'						, Array( $this, 'load_admin_page' ) );
+		add_action( 'admin_init'													, Array( $this, 'register_options' ) );
+		add_action( 'admin_menu'											, Array( $this, 'register_setting_page' ) );
+		add_action( 'admin_footer'											, Array( $this, 'admin_form_scripts' ) );
+		add_action( 'save_post'												, Array( $this, 'save_post' ) );
+		add_action( 'add_meta_boxes'										, Array( $this, 'reigster_meta_box' ), 0 );
+		add_action( 'admin_enqueue_scripts'							, Array( $this, 'load_admin_page' ) );
 
 		add_filter( "lava_{$this->post_type}_json_addition"		, Array( $this, 'json_addition' ), 10, 3 );
-		add_filter( "lava_{$this->post_type}_categories"		, Array( $this, 'json_categories' ) );
+		add_filter( "lava_{$this->post_type}_categories"			, Array( $this, 'json_categories' ) );
 		add_filter( 'lava_realestate_listing_featured_no_image'	, Array( $this, 'noimage' ) );
-		add_filter( "lava_{$this->post_type}_login_url"			, Array( $this, 'login_url' ) );
+		add_filter( "lava_{$this->post_type}_login_url"				, Array( $this, 'login_url' ) );
 
 		require_once 'functions-admin.php';
 
-		if( isset( $_POST[ 'lava_realestate_refresh' ] ) )
+		if( isset( $_POST[ 'lava_' . self::SLUG . '_refresh' ] ) )
 			self::item_refresh();
 	}
 
@@ -45,12 +49,22 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 
 		add_meta_box(
 			'lava_realestate_manager_metas'
-			, __( "Realestate Addition Meta", 'Lavacode' )
+			, __( "Property Additional Meta", 'Lavacode' )
 			, Array( $this, 'lava_realestate_manager_addition_meta' )
 			, self::SLUG
 			, 'advanced'
 			, 'high'
 		);
+
+		add_meta_box(
+			'lava_realestate_manager_map_metas'
+			, __( "Map settings", 'Lavacode' )
+			, Array( $this, 'lava_realestate_manager_map_meta' )
+			, 'page'
+			, 'side'
+			, 'high'
+		);
+
 	}
 
 	public function lava_realestate_manager_addition_meta( $post )
@@ -67,9 +81,20 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 		$lava_property_fields	= apply_filters( "lava_{$this->post_type}_more_meta", Array() );
 
 		ob_start();
-			do_action( 'lava_admin_item_metabox_before' , $post );
+			do_action( "lava_{$this->post_type}_admin_metabox_before" , $post );
 			require_once dirname( __FILE__) . '/admin/admin-metabox.php';
-			do_action( 'lava_admin_item_metabox_after' , $post );
+			do_action( "lava_{$this->post_type}_admin_metabox_after" , $post );
+		ob_end_flush();
+	}
+
+	public function lava_realestate_manager_map_meta( $post )
+	{
+		global $post;
+
+		ob_start();
+			do_action( "lava_{$this->post_type}_admin_map_meta_before" , $post );
+			require_once dirname( __FILE__) . '/admin/admin-mapmeta.php';
+			do_action( "lava_{$this->post_type}_admin_map_meta_after" , $post );
 		ob_end_flush();
 	}
 
@@ -80,11 +105,8 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 
 		$output_variable	= Array();
 		$output_variable[]	= "<script type=\"text/javascript\">";
-		$output_variable[]	= sprintf( "var %s=\"%s\";", 'fail_find_address', __( "Sorry, find address failed", 'Lavacode' ) );
+		$output_variable[]	= sprintf( "var %s=\"%s\";", 'fail_find_address', __( "You are not the author.", 'Lavacode' ) );
 		$output_variable[]	= "</script>";
-
-
-
 
 		echo @implode( "\n", $output_variable ); ?>
 		<script type="text/javascript">
@@ -350,10 +372,16 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 	{
 		$lava_query		= new lava_Array( $_POST );
 		$lava_PT		= new lava_Array( $lava_query->get( 'lava_pt', Array() ) );
+		$lava_mapMETA	= $lava_query->get( 'lava_map_param' );
 		$lava_moreMETA	= $lava_query->get( 'lava_additem_meta' );
 
 		// More informations
 		if( !empty( $lava_moreMETA ) ) : foreach( $lava_moreMETA as $key => $value ) {
+			update_post_meta( $post_id, $key, $value );
+		} endif;
+
+		// Map informations
+		if( !empty( $lava_mapMETA ) ) : foreach( $lava_mapMETA as $key => $value ) {
 			update_post_meta( $post_id, $key, $value );
 		} endif;
 
@@ -396,35 +424,86 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 	{
 		add_submenu_page(
 			'edit.php?post_type=' . self::SLUG
-			, __( "Lava Realestate Manager Settings", 'Lavacode' )
+			, __( "Lava Real Estate Manager Settings", 'Lavacode' )
 			, __( "Settings", 'Lavacode' )
 			, 'manage_options'
 			, 'lava-' . self::SLUG . '-settings'
 			, Array( $this, 'admin_page_template' )
 		);
+		/*
+		add_submenu_page(
+			'edit.php?post_type=' . self::SLUG
+			, __( "Welcome Lava Real Estate Manager", 'Lavacode' )
+			, __( "Lava Real Estate Manager Information", 'Lavacode' )
+			, 'manage_options'
+			, 'lava-' . self::SLUG . '-welcome'
+			, Array( &$this, 'admin_welcome_template')
+		);
+		*/
 	}
 
 	public function admin_page_template()
 	{
 		global $lava_realestate_manager;
 
+		$arrTabs_args		= Array(
+			''				=>	Array(
+				'label'		=> __( "index", 'Lavocode' )
+				, 'group'	=> self::__OPTION_GROUP__
+				, 'file'	=> $this->admin_dir . 'admin-index.php'
+			)
+		);
+
+		$arrTabs		= apply_filters( "lava_{$this->post_type}_admin_tab", $arrTabs_args );
+
 		echo self::$item_refresh_message;
 		echo "<div class=\"wrap\">";
+			printf( "<h2>%s</h2>", __( "Lava Real Estate Manager Settings", 'Lavacode' ) );
 			echo "<form method=\"post\" action=\"options.php\">";
+			echo "<h2 class=\"nav-tab-wrapper\">";
+			$strCurrentPage	= isset( $_GET[ 'index' ] ) && $_GET[ 'index' ] != '' ? $_GET[ 'index' ] : '';
+			if( !empty( $arrTabs ) ) : foreach( $arrTabs as $key => $meta ) {
+					printf(
+						"<a href=\"%s\" class=\"nav-tab %s\">%s</a>"
+						, esc_url(
+								add_query_arg(
+									Array(
+										'post_type' => self::SLUG
+										, 'page' => 'lava-' . self::SLUG . '-settings'
+										, 'index' => $key
+									)
+									, admin_url( 'edit.php' )
+								)
+							)
+						, ( $strCurrentPage == $key ? 'nav-tab-active' : '' )
+						, $meta[ 'label' ]
+					);
 
-			settings_fields( self::__OPTION_GROUP__ );
+				}
+				echo "</h2>";
+				if( $strTabMeta = $arrTabs[ $strCurrentPage ] ) {
+					settings_fields( $strTabMeta[ 'group' ] );
+					if( file_exists( $strTabMeta[ 'file' ] ) )
+						require_once $strTabMeta[ 'file' ];
+				}
+			endif;
 
-			if( file_exists( $this->admin_dir . 'admin-index.php' ) )
-				require_once $this->admin_dir . 'admin-index.php';
+			printf( "<button type=\"\" class=\"button button-primary\">%s</button>", __( "Save", 'Lavacode' ) );
 
 			echo "</form>";
-			echo "<form id=\"lava_realestate_item_refresh\" method=\"post\">";
-			wp_nonce_field( 'lava_realestate_items', 'lava_realestate_refresh');
+			echo "<form id=\"lava_common_item_refresh\" method=\"post\">";
+			wp_nonce_field( "lava_{$this->post_type}_items", "lava_{$this->post_type}_refresh" );
 			echo "<input type=\"hidden\" name=\"lang\">";
 			echo "</form>";
 		echo "</div>";
 		wp_enqueue_media();
 		add_action( 'admin_footer'			, Array( $this, 'script_json' ) );
+	}
+
+	public function admin_welcome_template()
+	{
+		if( file_exists( $this->admin_dir . 'admin-welcome.php' ) )
+			require_once $this->admin_dir . 'admin-welcome.php';
 	}
 
 	public function script_json()
@@ -445,7 +524,7 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 				, init : function()
 				{
 					$( document )
-						.on( 'click', '#lava-json-generator'		, this.onGenerator() )
+						.on( 'click', '.lava-data-refresh-trigger'		, this.onGenerator() )
 						.on( 'click', '.fileupload'					, this.image_upload() )
 						.on( 'click', '.fileuploadcancel'			, this.image_remove() )
 
@@ -458,7 +537,7 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 					{
 						var
 							$this			= $( this )
-							, frm			= $( document ).find( "form#lava_realestate_item_refresh" )
+							, frm			= $( document ).find( "form#lava_common_item_refresh" )
 							, loading		= '<span class="spinner" style="display: block; float:left;"></span>'
 							, strLoading	= $( this ).data( 'loading' ) || "Processing"
 							, parent		= $( this ).parent();
@@ -564,7 +643,9 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 	{
 		global $wpdb;
 
-		if( empty( $_POST ) || !check_admin_referer( 'lava_realestate_items', 'lava_realestate_refresh' ) )
+		var_dump( "exists!!!! " );
+
+		if( empty( $_POST ) || !check_admin_referer( 'lava_' . self::SLUG . '_items', 'lava_' . self::SLUG . '_refresh' ) )
 			return;
 
 		$lava_query	= new lava_array( $_POST );
@@ -578,14 +659,13 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 			$wpml_join			= "";
 			$wpml_where			= "";
 			$wpml_req_language	= "";
-			if( defined('ICL_LANGUAGE_CODE') && $lang != '' )
+			if( self::$is_wpml_actived && $lang != '' )
 			{
 				if(
-					function_exists('icl_get_languages' ) &&
-					false !== (bool)( $lava_wpml_langs = icl_get_languages('skip_missing=0') )
+					function_exists( 'icl_get_languages' ) &&
+					false !== (bool)( $lava_wpml_langs = icl_get_languages( 'skip_missing=0' ) )
 				){
-					if( !empty( $lava_wpml_langs[ $lang ][ 'translated_name' ] ) )
-					{
+					if( !empty( $lava_wpml_langs[ $lang ][ 'translated_name' ] ) ) {
 						$wpml_req_language = $lava_wpml_langs[ $lang ][ 'translated_name' ];
 					}
 				}
@@ -663,8 +743,8 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 		}
 
 		$upload_folder					= wp_upload_dir();
-		$blog_id						= get_current_blog_id();
-		$lava_item_type					= self::SLUG;
+		$blog_id							= get_current_blog_id();
+		$lava_item_type				= self::SLUG;
 
 		$json_file = "{$upload_folder['basedir']}/lava_all_{$lava_item_type}_{$blog_id}_{$lang}.json";
 

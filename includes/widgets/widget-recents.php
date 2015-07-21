@@ -7,7 +7,7 @@ class Lava_Realestate_Recents extends WP_Widget
 		parent::__construct(
 			'Lava_Realestate_Recents'
 			, __( "[Lava] Realestate Recents Widget", 'Lavacode' )
-			, array( 'description' => __( ".", 'Lavacode' ) )
+			, array( 'description' => __( "This widget shows the list of the property which is uploaded recently", 'Lavacode' ) )
 		);
 
 		add_action( 'wp_footer'								, Array(__CLASS__, 'scripts' ) );

@@ -1,5 +1,3 @@
-<h2><?php _e( "Lava Realestate Manager Setting", 'Lavacode' ); ?></h2>
-
 <table class="form-table">
 	<tbody>
 
@@ -13,7 +11,7 @@
 							<th><?php _e( "Add Property", 'Lavacode' ); ?></th>
 							<td>
 								<select name="lava_realestate_manager_settings[page_add_<?php echo $this->post_type; ?>]">
-									<option value><?php _e( "Select Page", 'Lavacode' ); ?></option>
+									<option value><?php _e( "Select a Page", 'Lavacode' ); ?></option>
 									<?php echo getOptionsPagesLists( lava_realestate_manager_get_option( "page_add_{$this->post_type}" ) ); ?>
 								</select>
 							</td>
@@ -24,7 +22,7 @@
 							<th><?php _e( "My Page", 'Lavacode' ); ?></th>
 							<td>
 								<select name="lava_realestate_manager_settings[page_my_page]">
-									<option value><?php _e( "Select Page", 'Lavacode' ); ?></option>
+									<option value><?php _e( "Select a Page", 'Lavacode' ); ?></option>
 									<?php echo getOptionsPagesLists( lava_realestate_manager_get_option( 'page_my_page' ) ); ?>
 								</select>
 							</td>
@@ -106,7 +104,7 @@
 					<tbody>
 						<tr valign="top">
 							<td width="1%"></td>
-							<th>&nbsp;<?php _e( "JSON Generator", 'Lavacode' ); ?></th>
+							<th>&nbsp;<?php _e( "Data Refresh", 'Lavacode' ); ?></th>
 							<td>
 								<?php
 								if(
@@ -116,19 +114,19 @@
 									foreach( $lava_wpml_langs as $lang )
 									{
 										printf(
-											"<button class='button button-primary lava-fresh-jobs-trigger' data-lang='%s'>\n\t
+											"<button class='button button-primary lava-data-refresh-trigger' data-lang='%s'>\n\t
 												<img src='%s'> %s %s\n\t
 											</button>\n\t"
 											, $lang['language_code']
 											, $lang['country_flag_url']
 											, $lang['native_name']
-											, __("Refresh", 'lava_fr')
+											, __("Refresh", 'Lavacode')
 										);
 									}
 								}else{
 									?>
-									<button type="button" id="lava-json-generator" class="button button-primary" data-loading="<?php _e( "Processing", 'Lavacode' ); ?>...">
-										<?php _e("Refresh", 'lava_fr');?>
+									<button type="button" class="button button-primary lava-data-refresh-trigger" data-loading="<?php _e( "Processing", 'Lavacode' ); ?>...">
+										<?php _e("JSON Generator", 'Lavacode');?>
 									</button>
 									<?php
 								} ?>
@@ -140,7 +138,7 @@
 		</tr>
 
 		<tr valign="top">
-			<th scope="row"><?php _e( "Single Settings", 'Lavacode' ); ?></th>
+			<th scope="row"><?php _e( "Single Page Settings", 'Lavacode' ); ?></th>
 			<td>
 				<table class="widefat">
 					<tbody>
@@ -174,7 +172,7 @@
 							<th>&nbsp;<?php _e( "Blank Image", 'Lavacode' ); ?></th>
 							<td>
 								<input type="text" name="lava_realestate_manager_settings[blank_image]" value="<?php echo lava_realestate_manager_get_option( 'blank_image' ); ?>" tar="lava-blank-image">
-								<input type="button" class="button button-primary fileupload" value="<?php _e('Select Image', 'Lavacode');?>" tar="lava-blank-image">
+								<input type="button" class="button button-primary fileupload" value="<?php _e('Select an Image', 'Lavacode');?>" tar="lava-blank-image">
 								<input class="fileuploadcancel button" tar="lava-blank-image" value="<?php _e('Delete', 'Lavacode');?>" type="button">
 								<p>
 									<?php
@@ -193,6 +191,3 @@
 	</tbody>
 </table>
 <?php do_action( 'lava_realestate_manager_settings_after' ); ?>
-<button type="submit" class="button button-primary">
-	<?php _e( "Save", 'Lavacode' );?>
-</button>

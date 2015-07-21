@@ -85,7 +85,7 @@ function lava_map_listings_contents()
 			$lava_author					= get_userdata( $post->post_author );
 			$lava_author_name				= isset( $lava_author->display_name ) ? $lava_author->display_name : null;
 			$lava_has_author				= isset( $post->post_author );
-			
+
 			$lv_property_city = lava_realestate_featured_terms( 'property_city', $post->ID, false )!= '' ? lava_realestate_featured_terms( 'property_city', $post->ID, false ) : 'No City';
 			$lv_property_type = lava_realestate_featured_terms( 'property_type', $post->ID, false )!='' ? lava_realestate_featured_terms( 'property_type', $post->ID, false ) : 'No Type';
 			$lv_property_status = lava_realestate_featured_terms( 'property_status', $post->ID, false )!='' ? lava_realestate_featured_terms( 'property_status', $post->ID, false ) : 'No Status';
@@ -153,7 +153,7 @@ function lava_map_listings_contents()
 				, 'post_content'	=> $post->post_content
 				, 'post_date'		=>
 					sprintf(
-						__( "%s ago", 'lava_fr' )
+						__( "%s ago", 'Lavacode' )
 						, human_time_diff(
 							date( 'U', strtotime( $post->post_date ) )
 							, current_time( 'timestamp' )
@@ -168,8 +168,6 @@ function lava_map_listings_contents()
 				, 'place'			=> $lava_place_results
 				, 'lat'				=> $lava_lat
 				, 'lng'				=> $lava_lng
-				, 'category'		=> apply_filters( 'lavo_map_meta_category'	, __( "No Category", 'javo_fr' ), $post->ID )
-				, 'type'			=> apply_filters( 'lavo_map_meta_type'		, __( "No Type", 'javo_fr' ), $post->ID )
 				, 'property_city' => $lv_property_city
 				, 'property_type' => $lv_property_type
 				, 'property_status' => $lv_property_status
