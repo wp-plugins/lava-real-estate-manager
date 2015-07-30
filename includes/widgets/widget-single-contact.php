@@ -46,8 +46,8 @@ class Lava_Contact_Single_Page extends WP_Widget
 				case 'ninja'	: $lava_report_shortcode = '[ninja_forms id=%s title="%s"]'; break;
 			}
 		}
-		$GLOBALS[ 'lava_contact_shortcode' ] = sprintf( $lava_contact_shortcode, $instance['contact_id'], __( 'Javo Contact Form', 'javo_fr' ) );
-		$GLOBALS[ 'lava_report_shortcode' ] = sprintf( $lava_report_shortcode, $instance['report_id'], __( 'Javo Contact Form', 'javo_fr' ) );
+		$GLOBALS[ 'lava_contact_shortcode' ] = sprintf( $lava_contact_shortcode, $instance['contact_id'], __( 'Contact Form', 'Lavacode' ) );
+		$GLOBALS[ 'lava_report_shortcode' ] = sprintf( $lava_report_shortcode, $instance['report_id'], __( 'Contact Form', 'Lavacode' ) );
 
 		$output_filename		= basename( __FILE__ );
 

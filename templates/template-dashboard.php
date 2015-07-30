@@ -49,7 +49,7 @@ $lava_user_posts						= new WP_Query(
 					$lava_user_posts->the_post();
 					?>
 					<tr class="lava-realstate-<?php the_ID(); ?>">
-						<th>
+						<td>
 							<div class="lava-title">
 								<a href="<?php the_permalink(); ?>">
 									<?php the_title(); ?>
@@ -81,9 +81,9 @@ $lava_user_posts						= new WP_Query(
 
 								</div>
 							<?php endif; ?>
-						</th>
-						<th class="text-center"><?php echo get_the_date(); ?></th>
-						<th class="text-center"><?php echo strtoupper( get_post_status() ); ?></th>
+						</td>
+						<td class="text-center"><?php echo get_the_date(); ?></td>
+						<td class="text-center"><?php echo strtoupper( get_post_status() ); ?></td>
 					</tr>
 					<?php
 				}

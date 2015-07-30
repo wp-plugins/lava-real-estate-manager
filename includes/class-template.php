@@ -139,10 +139,9 @@ class Lava_RealEstate_Manager_template
 
 		$post		= $wp_query->queried_object;
 
-		if( is_object( $post ) ) {
+		if( is_a( $post, 'WP_Post' ) ) {
 
 			/* Single Template */ {
-
 				if( $wp_query->is_single && $post->post_type == $this->post_type ) {
 
 					if(  $__template = locate_template(
@@ -156,26 +155,42 @@ class Lava_RealEstate_Manager_template
 			}
 
 			/* Map Template */ {
-
 				if( "lava_{$this->post_type}_map" == get_post_meta( $post->ID, '_wp_page_template', true ) ){
-
-					add_action( 'wp_enqueue_scripts'	, Array( $this, 'map_template_enqueues' ) );
-					add_action( 'get_header'					, Array( $this, 'remove_html_margin_top' ) );
-					add_action( 'wp_head'						, Array( $this, 'parse_mapdata' ) );
-
-					$template			= $lava_realestate_manager->template_path . "/template-map.php";
-					if(  $__template = locate_template(
-							Array(
-								"lava-map-template.php"
-								, $lava_realestate_manager->folder . "/lava-map-template.php"
-							)
-						)
-					) $template = $__template;
+					$template = $this->get_map_template();
 				}
-
 			}
 		}
-		return $template;
+		return apply_filters( "lava_{$this->post_type}_get_template", $template, $wp_query, $this );
+	}
+
+
+
+
+	/**
+	 *
+	 *
+	 *	@return	string
+	 */
+	public function get_map_template()
+	{
+		global $lava_realestate_manager;
+
+		add_action( 'wp_enqueue_scripts'	, Array( $this, 'map_template_enqueues' ) );
+		add_action( 'body_class'					, Array( $this, 'map_template_body_class' ) );
+		add_action( 'get_header'					, Array( $this, 'remove_html_margin_top' ) );
+		add_action( 'wp_head'						, Array( $this, 'parse_mapdata' ) );
+
+		$result_template	= $lava_realestate_manager->template_path . "/template-map.php";
+		if(
+			$__template = locate_template(
+				Array(
+					"lava-map-template.php"
+					, $lava_realestate_manager->folder . "/lava-map-template.php"
+				)
+			)
+		) $result_template = $__template;
+
+		return $result_template;
 	}
 
 
@@ -185,7 +200,20 @@ class Lava_RealEstate_Manager_template
 	/**
 	 *
 	 *
-	 *	@param	object
+	 *	@param	Array
+	 *	@return	void
+	 */
+	public function map_template_body_class( $classes ) {
+		return wp_parse_args( Array( "page-template-lava_{$this->post_type}_map" ), $classes );
+	}
+
+
+
+
+
+	/**
+	 *
+	 *
 	 *	@return	void
 	 */
 	public function parse_mapdata()
@@ -193,6 +221,7 @@ class Lava_RealEstate_Manager_template
 		lava_realestate_mapdata( $post );
 		$GLOBALS[ 'post' ] = $post;
 	}
+
 
 
 

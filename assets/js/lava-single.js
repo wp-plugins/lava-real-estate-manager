@@ -1,7 +1,7 @@
 ( function( window, $, undef ) {
 	"use strict";
 
-	var lava_Di = function( options )
+	var lava_detail_item = function( options )
 	{
 		var
 			opt = $.extend(
@@ -39,12 +39,12 @@
 	}
 
 	$.lava_single = function( options ) {
-		new lava_Di( options );
+		new lava_detail_item( options );
 	}
 
-	lava_Di.prototype = {
+	lava_detail_item.prototype = {
 
-		constructor: lava_Di
+		constructor: lava_detail_item
 
 		, init : function()
 		{
@@ -180,24 +180,17 @@
 						results
 						, function( place_index, place_meta )
 						{
-							for( var j = 0 in filters )
-								if( place_meta.types.indexOf( filters[ j ] ) > -1 )
-									if( typeof places[ filters[ j ] ] == "undefined" ) {
-										places[ filters[ j ] ] = new Array( place_meta );
-									}else{
-										places[ filters[ j ] ].push( place_meta );
-									}
+							if( filters ) {
+								for( var j  in filters )
+									if( place_meta.types.indexOf( filters[ j ] ) > -1 )
+										if( typeof places[ filters[ j ] ] == "undefined" ) {
+											places[ filters[ j ] ] = new Array( place_meta );
+										}else{
+											places[ filters[ j ] ].push( place_meta );
+										}
+							}
 						}
 					); // End results each
-
-
-					if( typeof trigger != "undefined" )
-					{
-
-
-
-					}
-
 
 					$.each(
 						places

@@ -1,7 +1,7 @@
 <?php
-$javo_mapOptionsArgs		= Array();
-$javo_mapOptions			= apply_filters( "lava_{$this->post_type}_map_options_args", $javo_mapOptionsArgs );
-if( !empty( $javo_mapOptions ) ) : foreach( $javo_mapOptions as $mID => $mMeta ) {
+$lava_mapOptionsArgs		= Array();
+$lava_mapOptions			= apply_filters( "lava_{$this->post_type}_map_options_args", $lava_mapOptionsArgs );
+if( !empty( $lava_mapOptions ) ) : foreach( $lava_mapOptions as $mID => $mMeta ) {
 	$thisValue	= get_post_meta( $post->ID, $mID, true );
 	echo "<p><strong>{$mMeta['label']}</strong></p>";
 	switch( $mMeta[ 'type'] ) :

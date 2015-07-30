@@ -2,7 +2,7 @@
 Contributors: lavacode
 Requires at least: 3.2
 Tested up to: 4.2.2
-Stable tag: 0.1.2
+Stable tag: 0.1.3
 Tags: real estate, property, Vertical Market, MLS, Property listing, RETS, Listings, Agency, Broker, Realtor, Property, IDX, Property Management, Properties
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -78,11 +78,17 @@ It is currently (v0.1) available only English version. we are happy to have volu
 
 https://www.transifex.com/projects/p/lava-real-estate-manager/
 
+Arabic, German, Korean ready.
+Thank you for Arabic ( Faraj Omar), Jered (Korean), Teneriffa hauskauf ( German)
+
 Please email us at wp.lava.code@gmail.com , if you are interested.
 Thank you in advance.
 
 
 == Upgrade Notice ==
+
+= 0.1.3 =
+*Release Date - 30. July, 2015*
 
 = 0.1.2 =
 *Release Date - 21. July, 2015*
@@ -94,6 +100,14 @@ Thank you in advance.
 *Release Date - 30th Jun, 2015*
 
 == Changelog ==
+
+= 0.1.3 =
+*Release Date - 30. July, 2015*
+
+* Added : Arabic, Korean, German MO, PO file included
+* Improved : Single Property Page > Map, StreetView Google map API updated.
+* Fixed : Archive Page > error for missing Post ID
+* Fixed : Minor CSS, JS
 
 = 0.1.2 =
 *Release Date - 21. July, 2015*

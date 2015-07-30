@@ -64,8 +64,6 @@ function plugin_api_call($def, $action, $args) {
 
 	global $plugin_slug, $api_url, $wp_version;
 
-	var_dump( $args );
-
 	if (!isset($args->slug) || ($args->slug != $plugin_slug))
 		return false;
 

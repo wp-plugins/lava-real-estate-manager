@@ -23,7 +23,7 @@ foreach( $lava_get_this_tags as $tags ) {
 
 		<div class="form-inner">
 			<label><?php _e("Title", "Lavacode"); ?></label>
-			<input name="txt_title" type="text" class="form-control" value="<?php echo isset($edit) ? $edit->post_title : NULL?>" placeholder="Write a title">
+			<input name="txt_title" type="text" class="form-control" value="<?php echo isset($edit) ? $edit->post_title : NULL?>" placeholder="<?php _e('Write a title','Lavacode'); ?>">
 		</div>
 
 		<div class="form-inner">

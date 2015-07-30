@@ -43,7 +43,7 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 	public function reigster_meta_box()
 	{
 		foreach(
-			Array( 'postexcerpt', 'commentstatusdiv', 'commentsdiv', 'slugdiv', 'authordiv' )
+			Array( 'postexcerpt', 'commentstatusdiv', 'commentsdiv', 'slugdiv' )
 			as $keyMetaBox
 		) remove_meta_box( $keyMetaBox, self::SLUG, 'normal' );
 
@@ -397,6 +397,10 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 
 		// Featured item meta
 		update_post_meta( $post_id, '_featured_item', $lava_PT->get( 'featured', 0 ) );
+
+		// Upldate Json
+		do_action( "lava_{$this->post_type}_json_update", $post_id, get_post( $post_id ), null );
+
 	}
 
 	public function register_options() {
@@ -642,9 +646,6 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 	public static function item_refresh()
 	{
 		global $wpdb;
-
-		var_dump( "exists!!!! " );
-
 		if( empty( $_POST ) || !check_admin_referer( 'lava_' . self::SLUG . '_items', 'lava_' . self::SLUG . '_refresh' ) )
 			return;
 
@@ -680,7 +681,7 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 
 		$lava_all_posts = Array();
 		$lava_all_items = $wpdb->get_results(
-			$wpdb->prepare("SELECT ID, post_title FROM $wpdb->posts as p {$wpml_join} WHERE p.post_type=%s AND p.post_status=%s {$wpml_where} ORDER BY p.post_date ASC"
+			$wpdb->prepare("SELECT DISTINCT ID, post_title FROM $wpdb->posts as p {$wpml_join} WHERE p.post_type=%s AND p.post_status=%s {$wpml_where} ORDER BY p.post_date ASC"
 				, self::SLUG, 'publish'
 			)
 			, OBJECT
@@ -734,7 +735,6 @@ class Lava_RealEstate_Manager_Admin extends Lava_RealEstate_Manager_Func
 					, 'post_title'		=> $item->post_title
 					, 'lat'				=> $latlng['lat']
 					, 'lng'				=> $latlng['lng']
-					, 'rating'			=> get_post_meta( $item->ID, 'rating_average', true )
 					, 'icon'			=> ''
 					, 'tags'			=> $lava_categories_label->get( 'post_tag' )
 				);

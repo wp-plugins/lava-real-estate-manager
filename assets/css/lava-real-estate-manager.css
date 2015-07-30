@@ -19,11 +19,6 @@ Lava Realestate Manager
   display: none !important;
   visibility: hidden;
 }
-.container {
-  width: 1178px;
-  margin: 0 auto;
-  padding: 0 15px;
-}
 @media (max-width: 1178px) {
   .container {
     width: 100%;

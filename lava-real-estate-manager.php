@@ -3,7 +3,7 @@
  * Plugin Name: Lava Real Estate Manager
  * Plugin URI : http://lava-code.com/real-estate/
  * Description: Lava Real Estate Manager Plugin
- * Version: 0.1.2
+ * Version: 0.1.3
  * Author: lavacode
  * Author URI: http://lava-code.com/
  * Text Domain: Lavacode
@@ -34,7 +34,7 @@ if( ! class_exists( 'Lava_RealEstate_Manager' ) ) :
 
 	class Lava_RealEstate_Manager
 	{
-		private $version = '0.1.2';
+		private $version = '0.1.3';
 		private static $instance;
 
 		public function __construct( $file )

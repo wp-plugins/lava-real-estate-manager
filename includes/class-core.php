@@ -26,7 +26,6 @@ class Lava_RealEstate_Manager_Func
 			add_filter('lava_get_selbox_child_term_lists'	, Array( $this, 'selbox_child_term_lists_callback' ), 10, 7);
 
 		// Auto Items Update
-		add_action( 'save_post'				, Array( __CLASS__, 'lava_auto_generator_trigger_callback' ), 10, 3 );
 		add_action( 'lava_' . self::SLUG . '_json_update' ,  Array( __CLASS__, 'lava_auto_generator_trigger_callback' ), 10, 3);
 		add_action( 'transition_post_status'	,  Array( __CLASS__, 'lava_auto_generator_transition_trigger_callback' ), 10, 3 );
 		add_action( 'wp_trash_post'				,  Array( __CLASS__, 'lava_auto_generator_delete_trigger_callback' ) );
@@ -447,17 +446,14 @@ class Lava_RealEstate_Manager_Func
 
 		$post->crossdomain				= true;
 
-		$lava_get_query					= new lava_Array( $_GET );
-		$lava_post_query				= new lava_Array( $_POST );
-		$upload_folder					= wp_upload_dir();
-		$blog_id						= get_current_blog_id();
-		$post_type						= self::SLUG;
-		$lang							= defined('ICL_LANGUAGE_CODE') ? ICL_LANGUAGE_CODE : '';
+		$lava_get_query						= new lava_Array( $_GET );
+		$lava_post_query						= new lava_Array( $_POST );
+		$upload_folder							= wp_upload_dir();
+		$blog_id									= get_current_blog_id();
+		$post_type								= self::SLUG;
+		$lang										= defined('ICL_LANGUAGE_CODE') ? ICL_LANGUAGE_CODE : '';
 
-		$post->lava_type				= $post_type;
-		$post->lava_current_cat			= $lava_get_query->get( 'category', $lava_post_query->get( 'category', 0 ) );
-		$post->lava_current_loc			= $lava_get_query->get( 'location', $lava_post_query->get( 'location', 0 ) );
-		$post->lava_current_typ			= $lava_get_query->get( 'type', $lava_post_query->get( 'type', 0 ) );
+		$post->lava_type						= $post_type;
 		$post->lava_current_key			= $lava_get_query->get( 'keyword', $lava_post_query->get( 'keyword', null ) );
 		$post->lava_current_geo			= $lava_get_query->get( 'geolocation', $lava_post_query->get( 'geolocation', null ) );
 		$post->lava_current_rad			= $lava_get_query->get( 'radius_key', $lava_post_query->get( 'radius_key', null ) );
@@ -466,12 +462,12 @@ class Lava_RealEstate_Manager_Func
 		$post->json_file				= $post->crossdomain ?
 			"{$upload_folder['baseurl']}/lava_all_{$post_type}_{$blog_id}_{$lang}.json" :
 			"lava_all_{$post_type}_{$blog_id}_{$lang}.json";
+
+		do_action( "lava_{$post_type}_setup_mapdata", $post, $lava_get_query, $lava_post_query );
 	}
 
 	public static function lava_auto_generator_trigger_callback( $post_id, $post, $update ) {
-		remove_action( 'save_post'				, Array( __CLASS__, 'lava_auto_generator_trigger_callback' ), 10, 3 );
 		self::lava_auto_generator_callback( $post_id, 'publish' !== get_post_status( $post_id ) );
-		add_action( 'save_post'				, Array( __CLASS__, 'lava_auto_generator_trigger_callback' ), 10, 3 );
 	}
 
 	public static function lava_auto_generator_wpml_trigger_callback( $master, $lang=false,  $post_args=Array(), $post_id=0 ) {
@@ -524,6 +520,9 @@ class Lava_RealEstate_Manager_Func
 			, 'lng'						=> get_post_meta( $post_id, 'lv_item_lng', true )
 		);
 
+		if( !$is_remove && ( empty( $latlng[ 'lat' ] ) || empty( $latlng[ 'lng' ] ) ) )
+			return;
+
 		$category					= Array();
 		$category_label		= Array();
 
@@ -531,7 +530,7 @@ class Lava_RealEstate_Manager_Func
 
 			$lava_all_taxonomies				= apply_filters( 'lava_' . self::SLUG . '_categories', Array( 'post_tag' ) );
 
-			foreach( $lava_all_taxonomies as $taxonomy )
+			if( !empty( $lava_all_taxonomies ) ) : foreach( $lava_all_taxonomies as $taxonomy )
 			{
 
 				$results = $wpdb->get_results(
@@ -563,7 +562,7 @@ class Lava_RealEstate_Manager_Func
 					$category[ $taxonomy ][]			= $result->term_id;
 					$category_label[ $taxonomy ][]	= $result->name;
 				}
-			}
+			} endif;
 		}
 
 		/* Marker Icon */ {
@@ -582,7 +581,6 @@ class Lava_RealEstate_Manager_Func
 			, 'post_title'				=> get_the_title( $post_id )
 			, 'lat'							=> $latlng['lat']
 			, 'lng'							=> $latlng['lng']
-			, 'rating'					=> get_post_meta( $post_id, 'rating_average', true )
 			, 'icon'						=> ''
 			, 'tags'						=> $lava_categories_label->get( 'post_tag' )
 		);
